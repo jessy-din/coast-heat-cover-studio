@@ -1,0 +1,214 @@
+/* Coast Heat Cover Studio — editor chrome. The cover itself is drawn on canvas. */
+@font-face {
+  font-family: "Anton";
+  src: url("fonts/Anton-Regular.ttf") format("truetype");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Pacifico";
+  src: url("fonts/Pacifico-Regular.ttf") format("truetype");
+  font-display: swap;
+}
+
+:root {
+  --ink: #f5efe6;
+  --ink-dim: #b9ac9d;
+  --bg: #14090f;
+  --panel: #221019;
+  --panel-edge: #3a2030;
+  --accent: #ff5e8a;
+  --accent-2: #ffb03a;
+  --accent-3: #2ee6c8;
+  --danger: #ff4d4d;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 14px;
+}
+
+#app { height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+#topbar {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 10px 16px;
+  background: linear-gradient(90deg, #2b0e1e, #4a1030 55%, #7a2a12);
+  border-bottom: 2px solid #ff5e8a44;
+  flex-wrap: wrap;
+}
+
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand-mark {
+  width: 38px; height: 38px;
+  display: grid; place-items: center;
+  font-family: "Anton", sans-serif;
+  font-size: 18px; letter-spacing: 1px;
+  color: #14090f;
+  background: linear-gradient(135deg, var(--accent-2), var(--accent));
+  border-radius: 8px;
+}
+.brand strong {
+  display: block;
+  font-family: "Anton", sans-serif;
+  font-size: 20px; letter-spacing: 2px;
+}
+.brand span { display: block; font-size: 11px; color: var(--ink-dim); }
+
+.sizes { display: flex; gap: 6px; margin-left: auto; }
+.size-btn, #surpriseBtn, #undoBtn, #redoBtn {
+  background: #ffffff14;
+  color: var(--ink);
+  border: 1px solid #ffffff2e;
+  border-radius: 8px;
+  padding: 7px 10px;
+  cursor: pointer;
+  font: inherit;
+}
+.size-btn.active, .choices button.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.top-actions { display: flex; gap: 6px; }
+.primary {
+  background: linear-gradient(135deg, var(--accent-2), var(--accent));
+  color: #1c060f;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-weight: 800;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+#workspace { display: flex; flex: 1; min-height: 0; }
+
+#controls {
+  width: 308px;
+  flex: none;
+  overflow-y: auto;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--panel);
+  border-right: 1px solid var(--panel-edge);
+}
+
+.panel {
+  border: 1px solid var(--panel-edge);
+  border-radius: 12px;
+  padding: 12px;
+  background: #ffffff06;
+}
+.panel h2 {
+  margin: 0 0 8px;
+  font-family: "Anton", sans-serif;
+  font-size: 15px;
+  letter-spacing: 1.5px;
+  color: var(--accent-2);
+  font-weight: 400;
+}
+.hint { color: var(--ink-dim); font-size: 12px; margin: 4px 0 8px; line-height: 1.45; }
+.note p { font-size: 12px; color: var(--ink-dim); line-height: 1.5; margin: 0; }
+
+.tray {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+.tray img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  display: block;
+}
+.tray img.selected { border-color: var(--accent); }
+
+.upload {
+  display: block;
+  margin-top: 8px;
+  text-align: center;
+  padding: 9px;
+  border: 1px dashed var(--accent);
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.choices {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+.choices button {
+  background: #ffffff10;
+  color: var(--ink);
+  border: 1px solid #ffffff22;
+  border-radius: 8px;
+  padding: 8px 4px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+}
+.choices button small { display: block; color: var(--ink-dim); font-size: 10px; margin-top: 2px; }
+.choices button.active small { color: #ffe3ec; }
+
+label { display: block; margin: 8px 0; font-size: 12px; color: var(--ink-dim); }
+label input[type="text"], label select {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #ffffff2e;
+  background: #14090f;
+  color: var(--ink);
+  font: inherit;
+}
+label input[type="range"] { width: 100%; accent-color: var(--accent); }
+
+#stage {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 18px;
+  background:
+    radial-gradient(900px 500px at 70% -10%, #ff5e8a26, transparent 60%),
+    radial-gradient(700px 500px at 10% 110%, #ffb03a22, transparent 60%),
+    var(--bg);
+}
+#preview {
+  max-width: 100%;
+  max-height: calc(100vh - 150px);
+  width: auto;
+  height: auto;
+  border-radius: 6px;
+  box-shadow: 0 18px 50px #000c, 0 0 0 1px #ffffff1f;
+  cursor: crosshair;
+  background: #000;
+}
+#stageHint { color: var(--ink-dim); font-size: 12px; margin: 0; }
+
+/* Shot mode: the app draws one cover edge-to-edge for screenshots. */
+#shotMode { position: fixed; inset: 0; background: #000; }
+#shotMode canvas { width: 100vw; height: 100vh; display: block; }
+body.shot #app { display: none; }
+body.shot #shotMode { display: block; }
+body.shot { overflow: hidden; }
