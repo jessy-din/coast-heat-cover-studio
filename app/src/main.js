@@ -16,6 +16,9 @@ import {
 
 const SAMPLES = [
   { id: "hero", src: "samples/hero.jpg", name: "Convertible" },
+  { id: "man", src: "samples/man.jpg", name: "Leather jacket" },
+  { id: "biker", src: "samples/biker.jpg", name: "Motorcycle" },
+  { id: "boat", src: "samples/boat.jpg", name: "Speedboat" },
   { id: "car", src: "samples/car.jpg", name: "Pink car" },
   { id: "skyline", src: "samples/skyline.jpg", name: "Skyline" },
   { id: "neon", src: "samples/neon.jpg", name: "Neon street" },

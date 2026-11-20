@@ -164,9 +164,14 @@ export const DEFAULT_PANEL_LABELS = [
 ];
 
 // Captions that belong to each photo, so a panel's caption always matches the
-// photo inside it. Order matches the sample tray: hero, car, skyline, neon.
+// photo inside it. Order matches the sample tray: hero, man, biker, boat,
+// car, skyline, neon. The cast (hero + the three new characters) comes first
+// so the default panels show the full cast.
 export const PHOTO_LABELS = [
   { label: "OCEAN DRIVE", sub: "6:42 PM · LOOKING FOR TROUBLE" },
+  { label: "VICE CITY", sub: "AFTER DARK · NO ALIBI" },
+  { label: "COASTAL RUN", sub: "TOP SPEED · SUNSET CHASE" },
+  { label: "BISCAYNE BAY", sub: "OPEN WATER · NO WAKE" },
   { label: "INTERSTATE 6", sub: "11:58 PM · FULL THROTTLE" },
   { label: "MARINA DEL SOL", sub: "7:40 PM · NO WITNESSES" },
   { label: "NEON DINER", sub: "9:15 PM · LIGHTS OUT" },
@@ -269,18 +274,21 @@ function fitFont(ctx, text, maxWidth, startSize, family, weight) {
 }
 
 function drawTitleBlock(ctx, W, H, state, grade) {
-  const bandY = H * 0.64;
-  const scrim = ctx.createLinearGradient(0, bandY - H * 0.06, 0, H);
+  // Title-over-art (#1 style): huge title overlapping the photo panels, so
+  // the scrim starts higher to darken the title zone.
+  const bandY = H * 0.5;
+  const scrim = ctx.createLinearGradient(0, bandY, 0, H);
   scrim.addColorStop(0, `rgba(${grade.scrim},0)`);
-  scrim.addColorStop(0.35, `rgba(${grade.scrim},0.72)`);
+  scrim.addColorStop(0.3, `rgba(${grade.scrim},0.45)`);
+  scrim.addColorStop(0.65, `rgba(${grade.scrim},0.85)`);
   scrim.addColorStop(1, `rgba(${grade.scrim},0.94)`);
   ctx.fillStyle = scrim;
-  ctx.fillRect(0, bandY - H * 0.06, W, H - bandY + H * 0.06);
+  ctx.fillRect(0, bandY, W, H - bandY);
 
   const pad = W * 0.035;
   const title = (state.title || "COAST HEAT").toUpperCase();
-  const titleSize = fitFont(ctx, title, W - pad * 2, H * 0.155, "Anton, sans-serif", "");
-  const titleY = H * 0.845;
+  const titleSize = fitFont(ctx, title, W - pad * 2, H * 0.24, "Anton, sans-serif", "");
+  const titleY = H * 0.705;
   ctx.save();
   ctx.translate(W / 2, titleY);
   ctx.rotate(-0.02);
@@ -291,12 +299,18 @@ function drawTitleBlock(ctx, W, H, state, grade) {
   grad.addColorStop(0.55, grade.title[1]);
   grad.addColorStop(1, grade.title[2]);
   ctx.lineJoin = "round";
-  ctx.lineWidth = titleSize * 0.14;
+  ctx.lineWidth = titleSize * 0.17;
   ctx.strokeStyle = "#1c0612";
   ctx.strokeText(title, 0, 0);
+  // 3D chrome extrude: dark purple copy offset down-right, under the fill.
+  ctx.fillStyle = "#3d0a3d";
+  ctx.fillText(title, titleSize * 0.035, titleSize * 0.06);
   ctx.lineWidth = titleSize * 0.045;
   ctx.strokeStyle = "#ff2d78";
   ctx.strokeText(title, titleSize * 0.02, titleSize * 0.045);
+  ctx.shadowColor = "rgba(10,2,10,0.55)";
+  ctx.shadowBlur = titleSize * 0.1;
+  ctx.shadowOffsetY = titleSize * 0.03;
   ctx.fillStyle = grad;
   ctx.fillText(title, 0, 0);
   ctx.restore();
@@ -304,7 +318,7 @@ function drawTitleBlock(ctx, W, H, state, grade) {
   // Script subtitle, neon glow, tucked under the title's right side.
   const sub = state.subtitle || "";
   if (sub) {
-    const subSize = fitFont(ctx, sub, W * 0.62, H * 0.062, "Pacifico, cursive", "");
+    const subSize = fitFont(ctx, sub, W * 0.62, H * 0.075, "Pacifico, cursive", "");
     ctx.save();
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
@@ -312,28 +326,34 @@ function drawTitleBlock(ctx, W, H, state, grade) {
     ctx.shadowColor = grade.script;
     ctx.shadowBlur = H * 0.02;
     ctx.fillStyle = grade.script;
-    ctx.fillText(sub, W * 0.62, H * 0.925);
+    ctx.fillText(sub, W * 0.62, H * 0.85);
     ctx.restore();
   }
 
   // Star meter + quote line above the title.
   const stars = Math.max(0, Math.min(5, state.stars ?? 5));
   const starText = "★".repeat(stars) + "☆".repeat(5 - stars);
+  // Stars + quote sit above the title, over the photos: dark outline keeps
+  // them readable. Credit moves below the subtitle, above the ticker.
   ctx.save();
   ctx.textAlign = "left";
   ctx.textBaseline = "middle";
+  ctx.lineJoin = "round";
+  ctx.lineWidth = Math.max(2, H * 0.003);
+  ctx.strokeStyle = "rgba(12,4,10,0.85)";
   ctx.font = `${Math.round(H * 0.028)}px sans-serif`;
   ctx.fillStyle = "#ffd76b";
-  ctx.fillText(starText, pad, H * 0.685);
+  ctx.strokeText(starText, pad, H * 0.55);
+  ctx.fillText(starText, pad, H * 0.55);
   const quote = "“A FEVER DREAM IN NEON” — THE COAST HERALD";
   const quoteSize = fitFont(ctx, quote, W * 0.58, Math.round(H * 0.02), "sans-serif", "700");
   ctx.font = `700 ${quoteSize}px sans-serif`;
   ctx.fillStyle = "#f5efe6";
-  ctx.fillText(quote, pad + H * 0.16, H * 0.685);
-  // Credit line, tucked under the stars row where it never meets the subtitle.
+  ctx.strokeText(quote, pad + H * 0.16, H * 0.55);
+  ctx.fillText(quote, pad + H * 0.16, H * 0.55);
   ctx.font = `${Math.round(H * 0.013)}px sans-serif`;
   ctx.fillStyle = "rgba(245,239,230,0.75)";
-  ctx.fillText("COAST HEAT · A COAST HEAT COVER STUDIO PICTURE · STARRING YOU", pad, H * 0.715);
+  ctx.fillText("COAST HEAT · A COAST HEAT COVER STUDIO PICTURE · STARRING YOU", pad, H * 0.905);
   ctx.restore();
 
   // Badge, top-right of the title zone.
